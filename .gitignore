@@ -1,0 +1,34 @@
+# OSX system files
+*.DS_Store*
+
+# Maven files
+target
+profiles.xml
+
+# Big CSV
+police_inct.csv
+
+# Netbeans files
+nbactions.xml
+
+# Eclipe files
+.classpath
+.project
+.springBeans
+.springWebflow
+.settings
+.externalToolBuilders
+.tern-project
+
+# VIM files
+*.swp
+
+# Test files used during development
+*Test*Controller.java
+*test*.jsp*
+*test*.js
+*test*.css
+
+# Files used on production server for deployment
+archive
+deploy
