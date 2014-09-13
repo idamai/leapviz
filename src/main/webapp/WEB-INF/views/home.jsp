@@ -33,17 +33,17 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-		Array.matrix = function(numrows, numcols, initial){
-			 var arr = [];
-			 for (var i = 0; i < numrows; ++i){
-					var columns = [];
-					for (var j = 0; j < numcols; ++j){
-						 columns[j] = initial;
-					}
-					arr[i] = columns;
-				}
-				return arr;
+	Array.matrix = function(numrows, numcols, initial){
+		var arr = [];
+		for (var i = 0; i < numrows; ++i){
+			var columns = [];
+			for (var j = 0; j < numcols; ++j){
+				columns[j] = initial;
+			}
+			arr[i] = columns;
 		}
+		return arr;
+	}
  
     var NUM_ROWS = 100.0;
     var TILE_H = 640;
@@ -54,23 +54,13 @@
     var MIN_Y = - TILE_H*0.75;
     var NORMAL_DIST = 300;
     var MIN_DIST = 200;
-    var MAX_DIST = 400;   
-
-    // function to populate heat map
-    function getDataPoints(x1, x2, y1, y2) {
-      var rowSize = (y2 - y1) / NUM_ROWS;
-      var colSize = (x2 - x1) / NUM_ROWS;
-      var dataPoints = Array.matrix(numRows, numRows, 0);
-      var x;
-      var y;
-      var arr = JSON;
-      for (var i = 0; i < JSON.length; i++) {
-        x = Math.floor(JSON[i].POINT_X / colSize);
-        y = Math.floor(JSON[i].POINT_Y / rowSize);
-        dataPoints[x][y]++;
-      }
-    }
-
+	var MAX_DIST = 400;   
+	var server = "/leapvisualization";
+	var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 15};
+    var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
+    var lookAtPoint = {x: 0, y: 0, z: 0};
+    var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
+ 
     THREE.ImageUtils.crossOrigin = "anonymous";
     var randomTexture = THREE.ImageUtils.loadTexture('http://maps.googleapis.com/maps/api/staticmap?center=0,0&zoom=12&size=640x640');
     //var img = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture});
@@ -84,6 +74,31 @@
       }
     }
 
+	// retrieves data points
+	function getDataPoints() {
+		var curr_bounds = getBounds (mapLocation, TILE_H, TILE_W);
+		console.log("x1=" + curr_bounds.rightLon + "&y1=" + curr_bounds.upLat + "&x2=" +
+				curr_bounds.leftLon + "&y2=" + curr_bounds.downLat);
+		
+		var x1 = curr_bounds.rightLon;
+		var y1 = curr_bounds.upLat;
+		var x2 = curr_bounds.leftLon;
+		var y2 = curr_bounds.downLat;
+		$.ajax({
+			url: server + "/area-count?x1=" + x1 + "&y1=" + y1 + "&x2=" + x2 + "&y2=" + y2 + "&width=" +
+			NUM_ROWS + "&height=" + NUM_ROWS,
+			beforeSend: function() {
+			    console.log("Querying database with x1=" + x1 + "&y1=" + y1 + "&x2=" + x2 + "&y2=" + y2 + "&width=" +
+					NUM_ROWS + "&height=" + NUM_ROWS);
+			  }
+		})
+			.done(function(data) {
+				console.log("function called");
+				console.log(data);
+				updateHeatMap(data);
+			});
+	}
+		
     for (var i = 0; i < 3; i++) {
       for (var j = 0; j < 3; j++) {
         planes[i][j] = new THREE.Mesh(new THREE.PlaneGeometry(TILE_W, TILE_H), imgs[i+1][j+1]);
@@ -93,26 +108,38 @@
         planes[i][j].position.y = (j-1) * TILE_H;
       }
     }
-    
 
+    
     var sphereGeom = new THREE.SphereGeometry(3, 3, 2);
     var heatColors = [0xffffb2, 0xfecc5c, 0xfd8d3c, 0xf03b20, 0xbd0026];
     var sphereMat = [];
-		//TODO: obtain bounds and query database
-		//var data = getDataPoints(x1,x2,y1,y2);
+    var spheres = Array.matrix(NUM_ROWS, NUM_ROWS, null);
     for (var i = 0; i < 5; i++) sphereMat[i] = new THREE.MeshBasicMaterial({color: heatColors[i]});
-    for (var i = -50; i < 50; i++) {
-      for (var j = -50; j < 50; j++) {
-        var zVal = Math.exp(-(i*i + j*j)/1000)*300;
-//		 		var zVal = data[i + 50][j + 50];
-        var k = Math.round(zVal / 70);
-        var sphere = new THREE.Mesh(sphereGeom, sphereMat[k]);
-        sphere.position.x = i * (TILE_H / (NUM_ROWS*1.0));
-        sphere.position.y = j * (TILE_W / (NUM_ROWS*1.0));
-        sphere.position.z = zVal;
-        scene.add(sphere);
+    for (var i = 0; i < 100; i++) {
+      for (var j = 0; j < 100; j++) {
+		//TODO: update color
+        spheres[i][j] = new THREE.Mesh(sphereGeom, sphereMat[0]);
+        spheres[i][j].position.x = (i - 50) * (TILE_H / (NUM_ROWS));
+        spheres[i][j].position.y = (j - 50) * (TILE_W / (NUM_ROWS));
+        spheres[i][j].position.z = 0;
+        scene.add(spheres[i][j]);
       }
     }
+    
+    function updateHeatMap(dataPoints) {
+    	for (var i = 0; i < 100; i++) {
+    		for (var j = 0; j < 100; j++) {
+    			spheres[i][j].position.z = dataPoints[i][j] * 2;
+    			if (dataPoints[i][j] != 0) spheres[i][j].material = sphereMat[4];
+    			else {
+    				spheres[i][j].position.z = 0;
+    				spheres[i][j].material = sphereMat[0];
+    			}
+    		}
+    	}
+    }
+    
+    getDataPoints(); // initial plotting
 
     function updateCache(dx,dy) {
       if (dx === undefined) dx = 1000;
@@ -120,7 +147,7 @@
       var newimgs = [[],[],[],[],[]];
       for (var i = 0; i < 5; i++) {
         for (var j = 0; j < 5; j++) {
-          console.log(i+dx,j+dy);
+          // console.log(i+dx,j+dy);
           if (i+dx < 0 || i+dx >= 5 || j+dy < 0 || j+dy >= 5) {
             if (i == 2 && j == 2) {
               newimgs[i][j] = getMap(mapLocation);
@@ -134,7 +161,7 @@
               loc.lon = (i > 2)?bounds.rightLon:bounds.leftLon;
               if (i == 2) loc.lon = mapLocation.lon;
               newimgs[i][j] = getMap(loc);
-              console.log(i,j,loc);
+              // console.log(i,j,loc);
             }
           } else {
             newimgs[i][j] = imgs[i+dx][j+dy].map;
@@ -150,25 +177,30 @@
     }
 
     function updateMap() {
+      var updateData = false;
       if (lookAtPoint.x > MAX_X) {
         lookAtPoint.x -= TILE_W;
         mapLocation.lon = getBounds(mapLocation, TILE_H*2, TILE_W*2).rightLon;
         updateCache(1,0);
+        updateData = true;
       }
       if (lookAtPoint.x < MIN_X) {
         lookAtPoint.x += TILE_W;
         mapLocation.lon = getBounds(mapLocation, TILE_H*2, TILE_W*2).leftLon;
         updateCache(-1,0);
+        updateData = true;
       }
       if (lookAtPoint.y > MAX_Y) {
         lookAtPoint.y -= TILE_H;
         mapLocation.lat = getBounds(mapLocation, TILE_H*2, TILE_W*2).upLat;
         updateCache(0,1);
+        updateData = true;
       }
       if (lookAtPoint.y < MIN_Y) {
         lookAtPoint.y += TILE_H;
         mapLocation.lat = getBounds(mapLocation, TILE_H*2, TILE_W*2).downLat;
         updateCache(0,-1);
+        updateData = true;
       }
       if (cameraDelta.d < MIN_DIST) {
         mapLocation.zoom++;
@@ -176,6 +208,7 @@
         lookAtPoint.y *= 2;
         cameraDelta.d *= 2;
         updateCache();
+        updateData = true;
       }
       if (cameraDelta.d > MAX_DIST) {
         mapLocation.zoom--;
@@ -183,6 +216,10 @@
         lookAtPoint.y /= 2;
         cameraDelta.d /= 2;
         updateCache();
+        updateData = true;
+      }
+      if (updateData) {
+    	  getDataPoints();
       }
     }
 
@@ -208,17 +245,13 @@
 
     function getMap(mapLoc) {
       var query = 'http://maps.googleapis.com/maps/api/staticmap?center=' + mapLoc.lat + ',' + mapLoc.lon + '&zoom=' + mapLoc.zoom + '&size=640x640&key='+API_KEY;
-      console.log(query);
+      // console.log(query);
       return THREE.ImageUtils.loadTexture(query);
     }
 
     
 
-    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 11};
-    var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
-    var lookAtPoint = {x: 0, y: 0, z: 0};
-    var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
-    //loadMap(mapLocation);
+   //loadMap(mapLocation);
     updateCache();
     updateCamera();
 
@@ -276,7 +309,7 @@
     var info, palm, phalanges = [];
 
     function initPalm() {
-      console.log("initializing palm");
+      // console.log("initializing palm");
       // palm
       geometry = new THREE.BoxGeometry( 80, 20, 80 );
       geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -30 ) );  // to to +30 if using pitch roll & yaw
@@ -306,7 +339,7 @@
     }
 
     Leap.loop({enableGestures: true}, function(frame) {
-      console.log("inside loop");
+      // console.log("inside loop");
       // DRAWING OF HAND TO ACT AS CURSOR
       var hand, phalanx, point, length;
       if ( frame.hands.length ) {
@@ -361,7 +394,7 @@
                 countFingersExtended++;
               }
             }
-            console.log("number of fingers extended: " + countFingersExtended);
+            // console.log("number of fingers extended: " + countFingersExtended);
           }
           // perform rotate up and down if it detects circles
           if (frame.gestures.length > 0) {
@@ -381,7 +414,7 @@
                 }
               } else if (gesture.type == "screenTap") { // check for screen tap
                 // var duration = gesture.duration; 
-                console.log("performing selection");
+                // console.log("performing selection");
                 // get coordinates of location selected
                 var currMapBounds = getBounds(mapLocation, TILE_H, TILE_W);
                 var distLon = currMapBounds.rightLon - currMapBounds.leftLon;
@@ -397,22 +430,22 @@
                   performAction(selectedLat, selectedLon);
                 }
               } else {
-                console.log("unknown gesture type");
+                // console.log("unknown gesture type");
               }
             }
           } else if (countFingersExtended > 1) {
             if (roll > 0.5) { // tilt left
               panLeft(SCROLLSPEED);
-              console.log("shifting left");
+              // console.log("shifting left");
             } else if (roll < -0.5) { // tilt right
               panRight(SCROLLSPEED);
-              console.log("shifting right");
+              //console.log("shifting right");
             } else if (pitch > 0.5) { // tilt back
               panBackward(SCROLLSPEED);
-              console.log("tilting backward");
+              //console.log("tilting backward");
             } else if (pitch < -0.5) { // tilt forward
               panForward(SCROLLSPEED);
-              console.log("tilting forward");
+              //console.log("tilting forward");
             } else if (yaw < -0.5) { // rotating counterclockwise
               rotateLeft(ROTATESPEED);
             } else if (yaw > 0.5) { // rotating clockwise
@@ -428,11 +461,11 @@
               if ((hand.type == "right" && translation[0] > 0.5) || (hand.type == "left" && translation[0] < -0.5)) {
                 // zooming out
                 zoomOut(ZOOMSPEED);
-                console.log("zooming out");
+                //console.log("zooming out");
               } else if ((hand.type == "right" && translation[0] < -0.5) || (hand.type == "left" && translation[0] > 0.5)) {
                 // zoom in
                 zoomIn(ZOOMSPEED);
-                console.log("zooming in");
+                //console.log("zooming in");
               }
             }  
           }
