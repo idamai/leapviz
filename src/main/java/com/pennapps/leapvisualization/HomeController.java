@@ -114,7 +114,7 @@ public class HomeController {
 
 	@ResponseBody
 	@RequestMapping(value = "/nearst", method = RequestMethod.GET)
-	public List<CrimeEntry> getAreaCount(
+	public CrimeEntry getAreaCount(
 			@RequestParam(value = "x", required = true) Double x,
 			@RequestParam(value = "y", required = true) Double y)
 			throws IOException {

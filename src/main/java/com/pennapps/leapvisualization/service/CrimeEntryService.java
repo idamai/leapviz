@@ -43,7 +43,13 @@ public class CrimeEntryService {
 		return areaCount;
 	}
 
-	public List<CrimeEntry> getNearestFromPoint(Double x, Double y) {
-		return crimeEntryRepository.geoNearestCrimeEntry(x, y);
+	public CrimeEntry getNearestFromPoint(Double x, Double y) {
+		List<CrimeEntry> resultList = crimeEntryRepository
+				.geoNearestCrimeEntry(x, y);
+		if (!resultList.isEmpty()) {
+			return resultList.get(0);
+		} else
+			return null;
+
 	}
 }

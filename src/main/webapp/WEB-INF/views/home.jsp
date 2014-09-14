@@ -1,30 +1,36 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ page session="false" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page session="false"%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>LeapVis - PennApps Fall 2014</title>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Data visualization for Leap Motion">
-  <meta name="author" content="JY, ID, ZX, LH">
-  
-  <script src="<c:url value="/resources/js/three.min.js"/>"></script>
-  <script src="<c:url value="/resources/js/leap-0.6.2.js"/>"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-  <link href="http://getbootstrap.com/examples/justified-nav/justified-nav.css" rel="stylesheet">
-  <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300' rel='stylesheet' type='text/css'>
-  <link rel="icon" href="<c:url value="/resources/img/leapvis-favicon.png"/>">
+<title>LeapVis - PennApps Fall 2014</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Data visualization for Leap Motion">
+<meta name="author" content="JY, ID, ZX, LH">
 
-  <style>
-    body {
-      font-family: 'Source Sans Pro', sans-serif;
-      background-image: url("<c:url value="/resources/img/use_your_illusion.png"/>");
-    }
-  </style>
-  <script>
+<script src="<c:url value="/resources/js/three.min.js"/>"></script>
+<script src="<c:url value="/resources/js/leap-0.6.2.js"/>"></script>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link
+	href="http://getbootstrap.com/examples/justified-nav/justified-nav.css"
+	rel="stylesheet">
+<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300'
+	rel='stylesheet' type='text/css'>
+<link rel="icon"
+	href="<c:url value="/resources/img/leapvis-favicon.png"/>">
+
+<style>
+body {
+	font-family: 'Source Sans Pro', sans-serif;
+	background-image: url("<c:url value="/ resources/ img/ use_your_illusion.png "/>");
+}
+</style>
+<script>
     function reset() {
       console.log("resetting map");
       mapLocation = {lat: 39.9516054, lon: -75.193764, zoom: 15}; // resets to philadelphia
@@ -51,41 +57,47 @@
   </script>
 </head>
 <body>
-  <div class="container">
-    <table>
-      <tr>
-        <td><img src="<c:url value="/resources/img/leapvis-transparent.png"/>" width="200px" height="55px"></td>
-        <td>
-          <ul class="nav nav-justified" style="opacity:0.8">
-            <li><a href="about.html">About</a></li>
-            <li><a href="#">Instructions</a></li>
-          </ul>
-        </td>
-      </tr>
-    </table>
-  </div>
-  <br>
+	<div class="container">
+		<table>
+			<tr>
+				<td><img
+					src="<c:url value="/resources/img/leapvis-transparent.png"/>"
+					width="200px" height="55px"></td>
+				<td>
+					<ul class="nav nav-justified" style="opacity: 0.8">
+						<li><a href="about.html">About</a></li>
+						<li><a href="#">Instructions</a></li>
+					</ul>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<br>
 
-  <div id="mapContainer" align="center">
-    <div id="map">
-    </div>
-    <br>
-    <div id="infoPanel" style="color:white">
-      <br><br>
-    </div>
-    <br>
-    <div>
-      <label style="color:white">Latitude</label> <input type="text" id="lat-in" name="lat">
-     <label style="color:white"> Longitude</label> <input type="text" id="lng-in"  name="lon">
-      <label style="color:white">Remarks</label> <input type="text" id="type" name="remarks">
-      <button id ="submitNewReport" style="color:black" type="button">Submit Report</button>
-    </div>
-    <div style="color:white">
-      <input type="checkbox" id="pauseOnGesture" onclick="pauseForGestures()"> Pause gesture recognition</input>
-    </div>
-  </div>
-  
-  <script>
+	<div id="mapContainer" align="center">
+		<div id="map"></div>
+		<br>
+		<div id="infoPanel" style="color: white">
+			<br>
+			<br>
+		</div>
+		<br>
+		<div>
+			<label style="color: white">Latitude</label> <input type="text"
+				id="lat-in" name="lat"> <label style="color: white">
+				Longitude</label> <input type="text" id="lng-in" name="lon"> <label
+				style="color: white">Remarks</label> <input type="text" id="type"
+				name="remarks">
+			<button id="submitNewReport" style="color: black" type="button">Submit
+				Report</button>
+		</div>
+		<div style="color: white">
+			<input type="checkbox" id="pauseOnGesture"
+				onclick="pauseForGestures()"> Pause gesture recognition</input>
+		</div>
+	</div>
+
+	<script>
   	
     var paused = false;
     var verticalBuffer = 150;
@@ -499,13 +511,33 @@
     var selectX = NUM_ROWS / 2;
     var selectY = NUM_ROWS / 2;
 
+    function convertXYToCoords(x, y) {
+    	var bounds = getBounds(mapLocation, TILE_H*3, TILE_W*3);
+    	var diffLat = bounds.upLat - bounds.downLat;
+    	var diffLon = bounds.rightLon - bounds.leftLon;
+    	var selectedLat = y/NUM_ROWS * diffLat + bounds.downLat;
+    	var selectedLon = x/NUM_ROWS * diffLon + bounds.leftLon;
+    	return {
+    		"lat": selectedLat,
+    		"lon": selectedLon
+    	}
+    }
+    
     function performAction(x, y) {
-      var dataCollected = getDataForCoordinate(x, y);
-      var dataOutput = document.getElementById("infoPanel");
-      var dataString = "";
-      dataString += "Number of crimes: " + data[x][y] + "<br>";
-      dataString += dataCollected["remarks"];
-      dataOutput.innerHTML = dataString;
+      var coords = convertXYToCoords(x, y);
+      $.ajax({
+    	  url: server+"nearst?x="+coords.lon+"&y="+coords.lat
+      }).done(function(result){
+    	  if (result!=null){
+	    	  var dataOutput = document.getElementById("infoPanel");
+	          var dataString = "";
+	          dataString += "Number of crimes: " + data[x][y] + "<br>";
+	          dataString += "The most common crime is "+result.textGeneralCode+" at "+result.hour+" hours.";
+	          dataOutput.innerHTML = dataString;
+    	  }
+      });
+     
+      
     }
 
     // TODO: query database
@@ -678,12 +710,12 @@
     
   </script>
 
-  <!-- Site footer -->
-  <div class="container">
-    <div class="footer" style="color:white">
-      &copy; Ignatius Damai, Jevon Yeoh, Lianhan Loh, Zhan Xiong Chin<br>
-        PennApps - Fall 2014
-    </div>
-  </div>
+	<!-- Site footer -->
+	<div class="container">
+		<div class="footer" style="color: white">
+			&copy; Ignatius Damai, Jevon Yeoh, Lianhan Loh, Zhan Xiong Chin<br>
+			PennApps - Fall 2014
+		</div>
+	</div>
 </body>
 </html>
