@@ -97,17 +97,17 @@
     // document.body.appendChild(renderer.domElement);
     document.getElementById("map").appendChild(renderer.domElement);
 
-		Array.matrix = function(numrows, numcols, initial){
-			 var arr = [];
-			 for (var i = 0; i < numrows; ++i){
-					var columns = [];
-					for (var j = 0; j < numcols; ++j){
-						 columns[j] = initial;
-					}
-					arr[i] = columns;
-				}
-				return arr;
+	Array.matrix = function(numrows, numcols, initial){
+	 var arr = [];
+	 for (var i = 0; i < numrows; ++i){
+		var columns = [];
+		for (var j = 0; j < numcols; ++j){
+		 columns[j] = initial;
+			}
+			arr[i] = columns;
 		}
+		return arr;
+	}
  
     var NUM_ROWS = 30.0;
     var TILE_H = 640;
@@ -119,6 +119,21 @@
     var NORMAL_DIST = 400;
     var MIN_DIST = 300;
     var MAX_DIST = 600;   
+
+    // function to populate heat map
+    function getDataPoints(x1, x2, y1, y2) {
+      var rowSize = (y2 - y1) / NUM_ROWS;
+      var colSize = (x2 - x1) / NUM_ROWS;
+      var dataPoints = Array.matrix(numRows, numRows, 0);
+      var x;
+      var y;
+      var arr = JSON;
+      for (var i = 0; i < JSON.length; i++) {
+        x = Math.floor(JSON[i].POINT_X / colSize);
+        y = Math.floor(JSON[i].POINT_Y / rowSize);
+        dataPoints[x][y]++;
+      }
+    }
 
     THREE.ImageUtils.crossOrigin = "anonymous";
     var randomTexture = THREE.ImageUtils.loadTexture('http://maps.googleapis.com/maps/api/staticmap?center=0,0&zoom=12&size=640x640');
@@ -146,6 +161,8 @@
     var sphereGeom = new THREE.SphereGeometry(3, 3, 2);
     var heatColors = [0xffffb2, 0xfecc5c, 0xfd8d3c, 0xf03b20, 0xbd0026];
     var sphereMat = [];
+		//TODO: obtain bounds and query database
+		//var data = getDataPoints(x1,x2,y1,y2);
     for (var i = 0; i < 5; i++) sphereMat[i] = new THREE.MeshLambertMaterial({color: 0xffffff, ambient: heatColors[i], transparent: true, opacity: 0.3});
     /*for (var i = -50; i < 50; i++) {
       for (var j = -50; j < 50; j++) {
@@ -160,6 +177,30 @@
       }
     }*/
 
+ // retrieves data points
+    function getDataPoints() {
+    	var curr_bounds = getBounds (mapLocation, 3 * TILE_H, 3 * TILE_W);
+    	console.log("x1=" + curr_bounds.rightLon + "&y1=" + curr_bounds.upLat + "&x2=" +
+    			curr_bounds.leftLon + "&y2=" + curr_bounds.downLat);
+    	
+    	var x1 = curr_bounds.rightLon;
+    	var y1 = curr_bounds.upLat;
+    	var x2 = curr_bounds.leftLon;
+    	var y2 = curr_bounds.downLat;
+    	$.ajax({
+    		url: server + "/area-count?x1=" + x1 + "&y1=" + y1 + "&x2=" + x2 + "&y2=" + y2 + "&width=" +
+    		NUM_ROWS + "&height=" + NUM_ROWS,
+    		beforeSend: function() {
+    		    console.log("Querying database with x1=" + x1 + "&y1=" + y1 + "&x2=" + x2 + "&y2=" + y2 + "&width=" +
+    				NUM_ROWS + "&height=" + NUM_ROWS);
+    		  }
+   		})
+    		.done(function(data_new) {
+    			console.log("function called");
+    			console.log(data);
+    			data = data_new;
+   			});
+   	}
 
     //Draw data points
     var data = [];
@@ -190,6 +231,11 @@
       var b = (1-lambda)*(c1&0xff) + lambda*(c2&0xff);
       return (Math.floor(r) << 16) + (Math.floor(g) << 8) + Math.floor(b);
     }
+    
+    function updateHeatMap(data) {
+    	
+    }
+    
     function drawDataPoints() {
       for (var i = 0; i < NUM_ROWS; i++) {
         for (var j = 0; j < NUM_ROWS; j++) {
@@ -279,26 +325,32 @@
       }
     }
 
+    var toUpdate = false;
+    
     function updateMap() {
       if (lookAtPoint.x > MAX_X) {
         lookAtPoint.x -= TILE_W;
         mapLocation.lon = getBounds(mapLocation, TILE_H*2, TILE_W*2).rightLon;
         updateCache(1,0);
+        toUpdate = true;
       }
       if (lookAtPoint.x < MIN_X) {
         lookAtPoint.x += TILE_W;
         mapLocation.lon = getBounds(mapLocation, TILE_H*2, TILE_W*2).leftLon;
         updateCache(-1,0);
+        toUpdate = true;
       }
       if (lookAtPoint.y > MAX_Y) {
         lookAtPoint.y -= TILE_H;
         mapLocation.lat = getBounds(mapLocation, TILE_H*2, TILE_W*2).upLat;
         updateCache(0,1);
+        toUpdate = true;
       }
       if (lookAtPoint.y < MIN_Y) {
         lookAtPoint.y += TILE_H;
         mapLocation.lat = getBounds(mapLocation, TILE_H*2, TILE_W*2).downLat;
         updateCache(0,-1);
+        toUpdate = true;
       }
       if (cameraDelta.d < MIN_DIST) {
         mapLocation.zoom++;
@@ -306,6 +358,7 @@
         lookAtPoint.y *= 2;
         cameraDelta.d *= 2;
         updateCache();
+        toUpdate = true;
       }
       if (cameraDelta.d > MAX_DIST) {
         mapLocation.zoom--;
@@ -313,6 +366,11 @@
         lookAtPoint.y /= 2;
         cameraDelta.d /= 2;
         updateCache();
+        toUpdate = true;
+      }
+      if (toUpdate) {
+    	  getDataPoints();
+    	  toUpdate = false;
       }
     }
 
