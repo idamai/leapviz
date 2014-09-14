@@ -55,6 +55,18 @@ public class HomeController {
 		return "home";
 	}
 
+	@ResponseBody
+	@RequestMapping(value = "/add", method = RequestMethod.GET)
+	public String addCrimeEntry(
+			@RequestParam(value = "x", required = true) Double x,
+			@RequestParam(value = "y", required = true) Double y,
+			@RequestParam(value = "type", required = true) String type) {
+		CrimeEntry ce = new CrimeEntry("", "", "", "", "", "", "", "", type, x,
+				y, "");
+		crimeEntryService.addCrimeEntry(ce);
+		return "DONE";
+	}
+
 	@RequestMapping(value = "/about", method = RequestMethod.GET)
 	public String about(Locale locale, Model model) {
 
