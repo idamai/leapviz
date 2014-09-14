@@ -65,8 +65,8 @@ body {
 					width="200px" height="55px"></td>
 				<td>
 					<ul class="nav nav-justified" style="opacity: 0.8">
-						<li><a href="<c:url value ="/about"/>">About</a></li>
-						<li><a href="<c:url value ="/instructions"/>">Instructions</a></li>
+						<li><a href="about.html">About</a></li>
+						<li><a href="#">Instructions</a></li>
 					</ul>
 				</td>
 			</tr>
@@ -78,16 +78,16 @@ body {
 		<div id="map"></div>
 		<br>
 		<div id="infoPanel" style="color: white">
-			<br> <br>
+			<br>
+			<br>
 		</div>
 		<br>
 		<div>
 			<label style="color: white">Latitude</label> <input type="text"
 				id="lat-in" name="lat"> <label style="color: white">
 				Longitude</label> <input type="text" id="lng-in" name="lon"> <label
-				style="color: white">Remarks </label><input style="color: black"
-				type="text" name="remarks" id="remarks"
-				onblur="chatBoxSelected=false" onfocus="chatBoxSelected=true">
+				style="color: white">Remarks</label> <input type="text" id="type"
+				name="remarks">
 			<button id="submitNewReport" style="color: black" type="button">Submit
 				Report</button>
 		</div>
@@ -302,6 +302,7 @@ body {
     var selectRect = new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0xffffff}));
     function setSelectRect(sx, sy) {
       scene.remove(selectRect);
+	  if (!rects[sx]) return;
       var srect = rects[sx][sy];
 	  if (!srect) return;
       selectRect = new THREE.Mesh(
@@ -660,49 +661,47 @@ body {
       updateMap();
       updateCamera();
     });
-    var chatBoxSelected = false;
+
     $(document).keydown(function(e) {
-        if (!chatBoxSelected) {
-            if (e.keyCode == 37) { // left
-              panLeft(MOVESPEED);
-            } else if (e.keyCode == 38) { // up
-              panForward(MOVESPEED);
-            } else if (e.keyCode == 39) { // right
-              panRight(MOVESPEED);
-            } else if (e.keyCode == 40) { // down
-              panBackward(MOVESPEED);
-            } else if (e.keyCode == 87) { // W
-              rotateUp(0.1);
-            } else if (e.keyCode == 83) { // S
-              rotateDown(0.1);
-            } else if (e.keyCode == 65) { // A
-              rotateLeft(0.1);
-              //cameraDelta.angle += 0.1;
-            } else if (e.keyCode == 68) { // D
-              rotateRight(0.1);
-              //cameraDelta.angle -= 0.1;
-            } else if (e.keyCode == 81) { // Q
-              zoomIn(MOVESPEED);
-            } else if (e.keyCode == 69) { // E
-              zoomOut(MOVESPEED);
-            } else if (e.keyCode == 70) { // F
-              shrinkRects();
-            } else if (e.keyCode == 71) { // G
-              growRects();
-            } else if (e.keyCode == 76) { // L
-              performAction(selectX, selectY); // hardcoded coords for testing
-            } else if (e.keyCode == 82) { // R
-              reset();
-            } else if (e.keyCode == 80) { // P
-              $('#pauseOnGesture').prop('checked', !document.getElementById("pauseOnGesture").checked);
-              paused = document.getElementById("pauseOnGesture").checked;        
-            } else {
-              return;
-            }
-            updateMap();
-            updateCamera();
-            e.preventDefault();
-        }
+      if (e.keyCode == 37) { // left
+        panLeft(MOVESPEED);
+      } else if (e.keyCode == 38) { // up
+        panForward(MOVESPEED);
+      } else if (e.keyCode == 39) { // right
+        panRight(MOVESPEED);
+      } else if (e.keyCode == 40) { // down
+        panBackward(MOVESPEED);
+      } else if (e.keyCode == 87) { // W
+        rotateUp(0.1);
+      } else if (e.keyCode == 83) { // S
+        rotateDown(0.1);
+      } else if (e.keyCode == 65) { // A
+        rotateLeft(0.1);
+        //cameraDelta.angle += 0.1;
+      } else if (e.keyCode == 68) { // D
+        rotateRight(0.1);
+        //cameraDelta.angle -= 0.1;
+      } else if (e.keyCode == 81) { // Q
+        zoomIn(MOVESPEED);
+      } else if (e.keyCode == 69) { // E
+        zoomOut(MOVESPEED);
+      } else if (e.keyCode == 70) { // F
+        shrinkRects();
+      } else if (e.keyCode == 71) { // G
+        growRects();
+      } else if (e.keyCode == 76) { // L
+        performAction(15, 15); // hardcoded coords for testing
+      } else if (e.keyCode == 82) { // R
+        reset();
+      } else if (e.keyCode == 80) { // P
+        $('#pauseOnGesture').prop('checked', !document.getElementById("pauseOnGesture").checked);
+        paused = document.getElementById("pauseOnGesture").checked;        
+      } else {
+        return;
+      }
+      updateMap();
+      updateCamera();
+      e.preventDefault();
     });
 
     $(document).ready(function(){
