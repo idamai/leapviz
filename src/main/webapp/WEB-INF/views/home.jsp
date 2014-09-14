@@ -121,6 +121,10 @@
     var MIN_DIST = 300;
     var MAX_DIST = 600;   
     var server = "/leapvisualization/";
+    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 11};
+    var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
+    var lookAtPoint = {x: 0, y: 0, z: 0};
+    var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
     
     /* Submit remarks */
   	$("#submitNewReport").on("click",function(){
@@ -134,7 +138,7 @@
   		});
   		
   	});
-  	
+   
 
     // function to populate heat map
     function getDataPoints(x1, x2, y1, y2) {
@@ -177,21 +181,7 @@
     var sphereGeom = new THREE.SphereGeometry(3, 3, 2);
     var heatColors = [0xffffb2, 0xfecc5c, 0xfd8d3c, 0xf03b20, 0xbd0026];
     var sphereMat = [];
-		//TODO: obtain bounds and query database
-		//var data = getDataPoints(x1,x2,y1,y2);
     for (var i = 0; i < 5; i++) sphereMat[i] = new THREE.MeshLambertMaterial({color: 0xffffff, ambient: heatColors[i], transparent: true, opacity: 0.3});
-    /*for (var i = -50; i < 50; i++) {
-      for (var j = -50; j < 50; j++) {
-        var zVal = Math.exp(-(i*i + j*j)/1000)*300;
-//		 		var zVal = data[i + 50][j + 50];
-        var k = Math.round(zVal / 70);
-        var sphere = new THREE.Mesh(sphereGeom, sphereMat[k]);
-        sphere.position.x = i * (TILE_H / (NUM_ROWS*1.0));
-        sphere.position.y = j * (TILE_W / (NUM_ROWS*1.0));
-        sphere.position.z = zVal;
-        scene.add(sphere);
-      }
-    }*/
 
  // retrieves data points
     function getDataPoints() {
@@ -213,9 +203,8 @@
    		})
     		.done(function(data_new) {
     			console.log("function called");
-    			console.log(data);
     			data = data_new;
-			drawDataPoints();
+				drawDataPoints();
 		});
    	}
 
@@ -226,8 +215,7 @@
       for (var j = 0; j < NUM_ROWS; j++) {
         var x = i - NUM_ROWS/2;
         var y = j - NUM_ROWS/2;
-        //data[i][j] = Math.exp(-(x*x + y*y)/8)*200;
-        data[i][j] = Math.exp(Math.random()*10)/90;
+        data[i][j] = 0;
       }
     }
     var rects = [];
@@ -249,10 +237,6 @@
       return (Math.floor(r) << 16) + (Math.floor(g) << 8) + Math.floor(b);
     }
     
-    function updateHeatMap(data) {
-    	
-    }
-    
     function drawDataPoints() {
       for (var i = 0; i < NUM_ROWS; i++) {
         for (var j = 0; j < NUM_ROWS; j++) {
@@ -264,6 +248,7 @@
         }
       }
     }
+    getDataPoints();
     drawDataPoints();
 
     var selectRect = new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0xffffff}));
@@ -424,10 +409,6 @@
     pointLight.position.set(200,200,500);
     scene.add(pointLight);
 
-    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 11};
-    var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
-    var lookAtPoint = {x: 0, y: 0, z: 0};
-    var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
     updateCache();
     updateCamera();
 
