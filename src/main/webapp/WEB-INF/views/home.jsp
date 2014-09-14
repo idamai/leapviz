@@ -65,8 +65,8 @@ body {
 					width="200px" height="55px"></td>
 				<td>
 					<ul class="nav nav-justified" style="opacity: 0.8">
-						<li><a href="about.html">About</a></li>
-						<li><a href="#">Instructions</a></li>
+						<li><a href="<c:url value ="/about"/>">About</a></li>
+						<li><a href="<c:url value ="/instructions"/>">Instructions</a></li>
 					</ul>
 				</td>
 			</tr>
