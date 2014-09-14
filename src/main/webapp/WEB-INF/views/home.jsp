@@ -119,6 +119,7 @@
     var NORMAL_DIST = 400;
     var MIN_DIST = 300;
     var MAX_DIST = 600;   
+    var server = "/leapvisualization/";
 
     // function to populate heat map
     function getDataPoints(x1, x2, y1, y2) {
@@ -199,7 +200,8 @@
     			console.log("function called");
     			console.log(data);
     			data = data_new;
-   			});
+			drawDataPoints();
+		});
    	}
 
     //Draw data points
