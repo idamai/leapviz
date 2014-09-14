@@ -120,21 +120,6 @@
     var MIN_DIST = 300;
     var MAX_DIST = 600;   
 
-    // function to populate heat map
-    function getDataPoints(x1, x2, y1, y2) {
-      var rowSize = (y2 - y1) / NUM_ROWS;
-      var colSize = (x2 - x1) / NUM_ROWS;
-      var dataPoints = Array.matrix(numRows, numRows, 0);
-      var x;
-      var y;
-      var arr = JSON;
-      for (var i = 0; i < JSON.length; i++) {
-        x = Math.floor(JSON[i].POINT_X / colSize);
-        y = Math.floor(JSON[i].POINT_Y / rowSize);
-        dataPoints[x][y]++;
-      }
-    }
-
     THREE.ImageUtils.crossOrigin = "anonymous";
     var randomTexture = THREE.ImageUtils.loadTexture('http://maps.googleapis.com/maps/api/staticmap?center=0,0&zoom=12&size=640x640');
     //var img = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture});
@@ -157,13 +142,10 @@
         planes[i][j].position.y = (j-1) * TILE_H;
       }
     }
-    
 
     var sphereGeom = new THREE.SphereGeometry(3, 3, 2);
     var heatColors = [0xffffb2, 0xfecc5c, 0xfd8d3c, 0xf03b20, 0xbd0026];
     var sphereMat = [];
-		//TODO: obtain bounds and query database
-		//var data = getDataPoints(x1,x2,y1,y2);
     for (var i = 0; i < 5; i++) sphereMat[i] = new THREE.MeshLambertMaterial({color: 0xffffff, ambient: heatColors[i], transparent: true, opacity: 0.3});
     /*for (var i = -50; i < 50; i++) {
       for (var j = -50; j < 50; j++) {
