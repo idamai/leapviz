@@ -55,6 +55,18 @@ public class HomeController {
 		return "home";
 	}
 
+	@RequestMapping(value = "/about", method = RequestMethod.GET)
+	public String about(Locale locale, Model model) {
+
+		return "about";
+	}
+
+	@RequestMapping(value = "/instructions", method = RequestMethod.GET)
+	public String instructions(Locale locale, Model model) {
+
+		return "instructions";
+	}
+
 	@ResponseBody
 	@RequestMapping(value = "/crime-entry", method = RequestMethod.GET)
 	public List<CrimeEntry> getCrimeEntries() throws IOException {
