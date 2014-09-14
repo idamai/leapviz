@@ -66,7 +66,7 @@
   </div>
   <br>
 
-  <div id="mapContainer" align="center" style="color:white">
+  <div id="mapContainer" align="center">
     <div id="map">
     </div>
     <br>
@@ -74,18 +74,19 @@
       <br><br>
     </div>
     <br>
-    <form style="color:white">
-      Latitude <input type="text" name="lat">
-      Longitude <input type="text" name="lon">
-      Remarks <input type="text" name="remarks">
-      <input style="color:black" type="submit" value="Submit">
-    </form>
     <div>
-      <input type="checkbox" id="pauseOnGesture" onclick="pauseForGestures()"> Pause gesture recognition</input>
+      <label style="color:white">Latitude</label> <input type="text" id="lat-in" name="lat">
+     <label style="color:white"> Longitude</label> <input type="text" id="lng-in"  name="lon">
+      <label style="color:white">Remarks</label> <input type="text" id="type" name="remarks">
+      <button id ="submitNewReport" style="color:black" type="button">Submit Report</button>
+    </div>
+    <div>
+      <input type="checkbox" id="pauseOnGesture" onclick="pauseForGestures()"  style="color:white"> Pause gesture recognition</input>
     </div>
   </div>
   
   <script>
+  	
     var paused = false;
     var verticalBuffer = 150;
     var horizontalBuffer = 200;
@@ -124,6 +125,20 @@
     var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
     var lookAtPoint = {x: 0, y: 0, z: 0};
     var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
+    
+    /* Submit remarks */
+  	$("#submitNewReport").on("click",function(){
+  		var lat = $("#lat-in").val();
+  		var lng = $("#lng-in").val();
+  		var type = $("#type").val();
+  		$.ajax({
+  			url:server+"add?x="+lat+"&y="+lng+"&type="+type
+  		}).done(function(status) {
+			console.log(status);
+  		});
+  		
+  	});
+   
 
     console.log("variables initialized");
 
