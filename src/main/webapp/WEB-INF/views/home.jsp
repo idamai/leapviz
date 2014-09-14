@@ -27,7 +27,7 @@
   <script>
     function reset() {
       console.log("resetting map");
-      mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 11} // resets to philadelphia
+      mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 15} // resets to philadelphia
       // resets camera angles
       lookAtPoint = {x: 0, y: 0, z: 0};
       cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
@@ -120,10 +120,12 @@
     var MIN_DIST = 300;
     var MAX_DIST = 600;   
     var server = "/leapvisualization/";
-    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 11};
+    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 15};
     var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
     var lookAtPoint = {x: 0, y: 0, z: 0};
     var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
+
+    console.log("variables initialized");
 
     // function to populate heat map
     function getDataPoints(x1, x2, y1, y2) {
@@ -212,9 +214,10 @@
         rects[i][j].position.x = (i - NUM_ROWS/2 + 0.5) * (3*TILE_W/NUM_ROWS);
         rects[i][j].position.y = (j - NUM_ROWS/2 + 0.5) * (3*TILE_H/NUM_ROWS);
         rects[i][j].position.z = 0;
-        scene.add(rects[i][j]);
+        //scene.add(rects[i][j]);
       }
     }
+scene.add(rects[15][15]);
     function interpolate(c1, c2, lambda) {
       var r = (1-lambda)*(c1>>16) + lambda*(c2>>16);
       var g = (1-lambda)*((c1&0xffff)>>8) + lambda*((c2&0xffff)>>8);
@@ -234,7 +237,7 @@
       }
     }
     getDataPoints();
-    drawDataPoints();
+    //drawDataPoints();
 
     var selectRect = new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0xffffff}));
     function setSelectRect(sx, sy) {
@@ -384,7 +387,7 @@
 
     function getMap(mapLoc) {
       var query = 'http://maps.googleapis.com/maps/api/staticmap?center=' + mapLoc.lat + ',' + mapLoc.lon + '&zoom=' + mapLoc.zoom + '&size=640x640&key='+API_KEY;
-      console.log(query);
+      //console.log(query);
       return THREE.ImageUtils.loadTexture(query);
     }    
 
