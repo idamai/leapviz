@@ -49,7 +49,7 @@ public class CrimeEntryRepository {
 	}
 
 	public List<CrimeEntry> geoNearestCrimeEntry(Double x, Double y) {
-		Circle circle = new Circle(x, y, 0.000001);
+		Circle circle = new Circle(x, y, 0.00001);
 		return mongoTemplate.find(new Query(Criteria.where("location")
 				.withinSphere(circle)), CrimeEntry.class, COLLECTION_NAME);
 	}
