@@ -34,11 +34,16 @@ public class CrimeEntryService {
 		Double xDivider = (x1 - x2) / width.doubleValue();
 		Double yDivider = (y1 - y2) / height.doubleValue();
 		for (int i = 0; i < checkedData.size(); i++) {
-			CrimeEntry current = checkedData.get(i);
-			int xPos = (int) Math.floor((current.getPointX() - x2) / xDivider);
-			int yPos = (int) Math.floor((current.getPointY() - y2) / yDivider);
+			Double[] current = checkedData.get(i).getLocation();
+
+			int xPos = (int) Math.floor((current[0] - x2) / xDivider);
+			int yPos = (int) Math.floor((current[1] - y2) / yDivider);
 			areaCount[yPos][xPos]++;
 		}
 		return areaCount;
+	}
+
+	public List<CrimeEntry> getNearestFromPoint(Double x, Double y) {
+		return crimeEntryRepository.geoNearestCrimeEntry(x, y);
 	}
 }

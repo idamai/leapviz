@@ -88,4 +88,14 @@ public class HomeController {
 		return crimeEntryService.getAreaCount(x1, y1, x2, y2, width, height);
 	}
 
+	@ResponseBody
+	@RequestMapping(value = "/nearst", method = RequestMethod.GET)
+	public List<CrimeEntry> getAreaCount(
+			@RequestParam(value = "x", required = true) Double x,
+			@RequestParam(value = "y", required = true) Double y)
+			throws IOException {
+
+		return crimeEntryService.getNearestFromPoint(x, y);
+	}
+
 }

@@ -33,7 +33,7 @@ public class InitCrimeEntries {
 		reader.readHeaders();
 
 		while (reader.readRecord()) {
-			CrimeEntry ce = new CrimeEntry();
+
 			String DC_DIST = reader.get("DC_DIST");
 			String SECTOR = reader.get("SECTOR");
 			String DISPATCH_DATE_TIME = reader.get("DISPATCH_DATE_TIME");
@@ -52,20 +52,9 @@ public class InitCrimeEntries {
 			if (!pointYRead.isEmpty())
 				POINT_Y = Double.parseDouble(reader.get("POINT_Y").trim());
 			String SHAPE = reader.get("SHAPE");
-
-			ce.setDcDist(DC_DIST);
-			ce.setDcKey(DC_KEY);
-			ce.setDispatchDateTime(DISPATCH_DATE_TIME);
-			ce.setHour(HOUR);
-			ce.setLocationBlock(LOCATION_BLOCK);
-			ce.setObjectId(OBJECTID);
-			ce.setPointX(POINT_X);
-			ce.setPointY(POINT_Y);
-			ce.setSector(SECTOR);
-			ce.setShape(SHAPE);
-			ce.setTextGeneralCode(TEXT_GENERAL_CODE);
-			ce.setUcrGeneral(UCR_GENERAL);
-
+			CrimeEntry ce = new CrimeEntry(DC_DIST, SECTOR, DISPATCH_DATE_TIME,
+					HOUR, DC_KEY, LOCATION_BLOCK, UCR_GENERAL, OBJECTID,
+					TEXT_GENERAL_CODE, POINT_X, POINT_Y, SHAPE);
 			crimeEntryService.addCrimeEntry(ce);
 		}
 
