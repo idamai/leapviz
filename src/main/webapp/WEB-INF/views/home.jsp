@@ -303,6 +303,7 @@ body {
     function setSelectRect(sx, sy) {
       scene.remove(selectRect);
       var srect = rects[sx][sy];
+	  if (!srect) return;
       selectRect = new THREE.Mesh(
         srect.geometry,
         new THREE.MeshBasicMaterial({color: 0x0000ff, wireframe: true})
