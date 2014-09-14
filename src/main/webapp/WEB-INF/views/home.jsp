@@ -27,7 +27,7 @@
   <script>
     function reset() {
       console.log("resetting map");
-      mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 15} // resets to philadelphia
+      mapLocation = {lat: 39.9516054, lon: -75.193764, zoom: 15}; // resets to philadelphia
       // resets camera angles
       lookAtPoint = {x: 0, y: 0, z: 0};
       cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
@@ -70,7 +70,7 @@
     <div id="map">
     </div>
     <br>
-    <div id="infoPanel">
+    <div id="infoPanel" style="color:white">
       <br><br>
     </div>
     <br>
@@ -80,8 +80,8 @@
       <label style="color:white">Remarks</label> <input type="text" id="type" name="remarks">
       <button id ="submitNewReport" style="color:black" type="button">Submit Report</button>
     </div>
-    <div>
-      <input type="checkbox" id="pauseOnGesture" onclick="pauseForGestures()"  style="color:white"> Pause gesture recognition</input>
+    <div style="color:white">
+      <input type="checkbox" id="pauseOnGesture" onclick="pauseForGestures()"> Pause gesture recognition</input>
     </div>
   </div>
   
@@ -90,6 +90,7 @@
     var paused = false;
     var verticalBuffer = 150;
     var horizontalBuffer = 200;
+    var requestId;
 
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
@@ -98,6 +99,25 @@
     // document.body.appendChild(renderer.domElement);
     document.getElementById("map").appendChild(renderer.domElement);
 
+    var render = function() {
+        requestId = requestAnimationFrame(render);
+        renderer.render(scene, camera);
+      };
+      
+      
+      function start(){
+      	if (!requestId){
+      		render();
+      	}
+      }
+      
+      function stop(){
+      	if (requestId){
+      		cancelAnimationFrame(render);
+      		requestId =undefined;
+      	}
+      }
+      
 	Array.matrix = function(numrows, numcols, initial){
 	 var arr = [];
 	 for (var i = 0; i < numrows; ++i){
@@ -121,7 +141,7 @@
     var MIN_DIST = 300;
     var MAX_DIST = 600;   
     var server = "/leapvisualization/";
-    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 15};
+    var mapLocation = {lat: 39.9516054, lon: -75.193764, zoom: 15};
     var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
     var lookAtPoint = {x: 0, y: 0, z: 0};
     var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
@@ -196,28 +216,38 @@
     	var x2 = curr_bounds.leftLon;
     	var y2 = curr_bounds.downLat;
     	$.ajax({
+    		async: false,
     		url: server + "/area-count?x1=" + x1 + "&y1=" + y1 + "&x2=" + x2 + "&y2=" + y2 + "&width=" +
     		NUM_ROWS + "&height=" + NUM_ROWS,
     		beforeSend: function() {
     		    console.log("Querying database with x1=" + x1 + "&y1=" + y1 + "&x2=" + x2 + "&y2=" + y2 + "&width=" +
     				NUM_ROWS + "&height=" + NUM_ROWS);
+    		    
     		  }
    		})
     		.done(function(data_new) {
+
+    		    //stop();
     			console.log("function called");
     			data = data_new;
+    			console.log(data);
 				drawDataPoints();
+				//render();
+				//start();
 		});
    	}
+ 
+ 
 
     //Draw data points
     var data = [];
+    var doDraw = false;
     for (var i = 0; i < NUM_ROWS; i++) {
       data.push([]);
       for (var j = 0; j < NUM_ROWS; j++) {
         var x = i - NUM_ROWS/2;
         var y = j - NUM_ROWS/2;
-        data[i][j] = 0;
+        data[i][j] = 5;
       }
     }
     var rects = [];
@@ -225,14 +255,14 @@
       rects.push([]);
       for (var j = 0; j < NUM_ROWS; j++) {
         data[i].push(0);
-        rects[i][j] = new THREE.Mesh(sphereGeom,sphereMat[0]);
+        rects[i][j] = new THREE.Mesh(new THREE.BoxGeometry(3*TILE_W/NUM_ROWS, 3*TILE_H/NUM_ROWS,1),sphereMat[0]);
         rects[i][j].position.x = (i - NUM_ROWS/2 + 0.5) * (3*TILE_W/NUM_ROWS);
         rects[i][j].position.y = (j - NUM_ROWS/2 + 0.5) * (3*TILE_H/NUM_ROWS);
         rects[i][j].position.z = 0;
-        //scene.add(rects[i][j]);
+        scene.add(rects[i][j]);
       }
     }
-scene.add(rects[15][15]);
+
     function interpolate(c1, c2, lambda) {
       var r = (1-lambda)*(c1>>16) + lambda*(c2>>16);
       var g = (1-lambda)*((c1&0xffff)>>8) + lambda*((c2&0xffff)>>8);
@@ -243,15 +273,18 @@ scene.add(rects[15][15]);
     function drawDataPoints() {
       for (var i = 0; i < NUM_ROWS; i++) {
         for (var j = 0; j < NUM_ROWS; j++) {
-          rects[i][j].geometry = new THREE.BoxGeometry(3*TILE_W/NUM_ROWS, 3*TILE_H/NUM_ROWS,data[i][j]);
-          rects[i][j].position.z = data[i][j]/2 + 0.5;
+          //console.log(i,j,data[i][j]);
+          //rects[i][j].geometry = new THREE.BoxGeometry(3*TILE_W/NUM_ROWS, 3*TILE_H/NUM_ROWS,data[i][j]);
+          if (mapLocation.zoom < 15) rects[i][j].scale.z = (data[i][j]+0.01)/Math.pow(3,15-mapLocation.zoom);
+          else rects[i][j].scale.z = (data[i][j]+0.01);
+          rects[i][j].position.z = rects[i][j].scale.z/2 + 0.5;
           var lambda = Math.min(data[i][j]/200, 0.99);
           var col = interpolate(0xffff00, 0xff0000, lambda);
           rects[i][j].material = new THREE.MeshLambertMaterial({color: col, transparent: true, opacity: 0.5});
         }
       }
     }
-    getDataPoints();
+    //getDataPoints();
     //drawDataPoints();
 
     var selectRect = new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0xffffff}));
@@ -416,8 +449,8 @@ scene.add(rects[15][15]);
     updateCamera();
 
     // speed of frame changing
-    var MOVESPEED = 20;
-    var SCROLLSPEED = 20;
+    var MOVESPEED = 10;
+    var SCROLLSPEED = 10;
     var ROTATESPEED = 0.1;
     var ZOOMSPEED = 10;
     var ROTATEFRONTBACKSPEED = 0.005;
@@ -467,11 +500,11 @@ scene.add(rects[15][15]);
     var selectY = NUM_ROWS / 2;
 
     function performAction(x, y) {
-      var data = getDataForCoordinate(x, y);
+      var dataCollected = getDataForCoordinate(x, y);
       var dataOutput = document.getElementById("infoPanel");
       var dataString = "";
-      dataString += "Number of crimes: " + data["count"] + "<br>";
-      dataString += data["remarks"];
+      dataString += "Number of crimes: " + data[x][y] + "<br>";
+      dataString += dataCollected["remarks"];
       dataOutput.innerHTML = dataString;
     }
 
@@ -623,7 +656,7 @@ scene.add(rects[15][15]);
       } else if (e.keyCode == 71) { // G
         growRects();
       } else if (e.keyCode == 76) { // L
-        performAction(40.022482, -75.108077); // hardcoded coords for testing
+        performAction(15, 15); // hardcoded coords for testing
       } else if (e.keyCode == 82) { // R
         reset();
       } else if (e.keyCode == 80) { // P
@@ -637,14 +670,12 @@ scene.add(rects[15][15]);
       e.preventDefault();
     });
 
-    var render = function() {
-      requestAnimationFrame(render);
-       
-      //plane.rotation.z += 0.01;
-
-      renderer.render(scene, camera);
-    };
-    render();
+    $(document).ready(function(){
+   	 	getDataPoints();
+   	 	render();
+    });
+    
+    
   </script>
 
   <!-- Site footer -->

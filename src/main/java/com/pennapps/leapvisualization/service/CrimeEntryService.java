@@ -38,7 +38,7 @@ public class CrimeEntryService {
 
 			int xPos = (int) Math.floor((current[0] - x2) / xDivider);
 			int yPos = (int) Math.floor((current[1] - y2) / yDivider);
-			areaCount[yPos][xPos]++;
+			areaCount[xPos][yPos]++;
 		}
 		return areaCount;
 	}
