@@ -120,6 +120,10 @@
     var MIN_DIST = 300;
     var MAX_DIST = 600;   
     var server = "/leapvisualization/";
+    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 11};
+    var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
+    var lookAtPoint = {x: 0, y: 0, z: 0};
+    var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
 
     // function to populate heat map
     function getDataPoints(x1, x2, y1, y2) {
@@ -390,10 +394,6 @@
     pointLight.position.set(200,200,500);
     scene.add(pointLight);
 
-    var mapLocation = {lat: 40.022482, lon: -75.108077, zoom: 11};
-    var API_KEY = "AIzaSyB6PUUj1nfpIUw3gmF2e0s5AaoZe-CFyRA";
-    var lookAtPoint = {x: 0, y: 0, z: 0};
-    var cameraDelta = {d: NORMAL_DIST, elevation: 45 * (Math.PI / 180), heading: 180 * (Math.PI / 180)};
     updateCache();
     updateCamera();
 
