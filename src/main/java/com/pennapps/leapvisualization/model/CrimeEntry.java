@@ -2,7 +2,6 @@ package com.pennapps.leapvisualization.model;
 
 import java.io.Serializable;
 
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -25,7 +24,6 @@ public class CrimeEntry implements Serializable {
 
 	private String ucrGeneral;
 
-	@Id
 	private String objectId;
 
 	private String textGeneralCode;
